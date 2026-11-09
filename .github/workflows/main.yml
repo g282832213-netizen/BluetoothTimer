@@ -29,6 +29,26 @@ jobs:
       - name: Extract project
         run: unzip -q BluetoothTimer-AndroidStudio-Project-v2.zip -d source
 
+      - name: Fix Java and Kotlin JVM targets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("source/BluetoothTimer/app/build.gradle.kts")
+          s = p.read_text()
+          s = s.replace(
+              "android {",
+              """android {
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+          """, 1)
+          p.write_text(s)
+          PY
+
       - name: Build APK
         working-directory: source/BluetoothTimer
         run: gradle assembleDebug
