@@ -46,6 +46,8 @@ jobs:
           working-directory: source/BluetoothTimer
           script: |
             gradle connectedDebugAndroidTest
+            adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb shell pm grant com.example.bluetoothtimer android.permission.POST_NOTIFICATIONS
             adb shell am start -n com.example.bluetoothtimer/.MainActivity
             sleep 2
             adb shell screencap -p /sdcard/layout.png
