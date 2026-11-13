@@ -19,7 +19,7 @@ class MainActivity : Activity() {
     private var loading = false
     private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
     private val permissionListener = Shizuku.OnRequestPermissionResultListener { _, result ->
-        status.text = if (result == 0) "Shizuku 已授权，可以开始倒计时" else "未获得 Shizuku 授权"
+        status.text = if (result == android.content.pm.PackageManager.PERMISSION_GRANTED) "Shizuku 已授权，可以开始倒计时" else "未获得 Shizuku 授权"
     }
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
@@ -74,7 +74,7 @@ class MainActivity : Activity() {
         button("授权 Shizuku") {
             try {
                 if (!Shizuku.pingBinder()) status.text = "请先在 Shizuku 应用中启动服务"
-                else if (Shizuku.checkSelfPermission() == 0) status.text = "Shizuku 已授权"
+                else if (Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) status.text = "Shizuku 已授权"
                 else Shizuku.requestPermission(17)
             } catch (_: Exception) { status.text = "Shizuku 不可用，请先启动服务" }
         }
@@ -94,7 +94,7 @@ class MainActivity : Activity() {
         slot = prefs.getInt("selected", 0).coerceIn(0,2)
         selector.setSelection(slot)
         restore()
-        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != 0)
+        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED)
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 10)
     }
     private fun params() = LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) }
@@ -125,7 +125,7 @@ class MainActivity : Activity() {
             status.text = "分钟和秒须为 0–59，总时长须为 1 秒至 7 天"; return
         }
         try {
-            if (!Shizuku.pingBinder() || Shizuku.checkSelfPermission() != 0) {
+            if (!Shizuku.pingBinder() || Shizuku.checkSelfPermission() != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 status.text = "请先启动 Shizuku，并点击授权"; return
             }
             if (Build.VERSION.SDK_INT >= 31 && !getSystemService(AlarmManager::class.java).canScheduleExactAlarms()) {
