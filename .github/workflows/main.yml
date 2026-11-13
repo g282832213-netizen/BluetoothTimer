@@ -6,7 +6,7 @@ on:
   push:
     paths:
       - 'BluetoothTimer-AndroidStudio-Project-v2.zip'
-      - 'ui-fix/MainActivity.kt'
+      - 'ui-fix/**'
       - '.github/workflows/main.yml'
 
 permissions:
@@ -17,31 +17,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-
       - name: Extract project
         run: unzip -q BluetoothTimer-AndroidStudio-Project-v2.zip -d source
-
-      - name: Apply responsive UI fix
-        run: cp ui-fix/MainActivity.kt source/BluetoothTimer/app/src/main/java/com/example/bluetoothtimer/MainActivity.kt
-
+      - name: Apply UI and Bluetooth fixes
+        run: |
+          cp ui-fix/MainActivity.kt source/BluetoothTimer/app/src/main/java/com/example/bluetoothtimer/MainActivity.kt
+          cp ui-fix/BluetoothAccessibilityService.kt source/BluetoothTimer/app/src/main/java/com/example/bluetoothtimer/BluetoothAccessibilityService.kt
       - name: Fix Java and Kotlin JVM targets
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path("source/BluetoothTimer/app/build.gradle.kts")
           s = p.read_text()
-          s = s.replace(
-              "android {",
-              """android {
+          s = s.replace("android {", """android {
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
                   targetCompatibility = JavaVersion.VERSION_17
@@ -52,11 +47,9 @@ jobs:
           """, 1)
           p.write_text(s)
           PY
-
       - name: Build APK
         working-directory: source/BluetoothTimer
         run: gradle assembleDebug
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
