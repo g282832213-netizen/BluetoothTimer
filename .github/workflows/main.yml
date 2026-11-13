@@ -44,7 +44,12 @@ jobs:
           target: google_apis
           arch: x86_64
           working-directory: source/BluetoothTimer
-          script: gradle connectedDebugAndroidTest
+          script: |
+            gradle connectedDebugAndroidTest
+            adb shell am start -n com.example.bluetoothtimer/.MainActivity
+            sleep 2
+            adb shell screencap -p /sdcard/layout.png
+            adb pull /sdcard/layout.png app/build/reports/layout.png
       - name: Upload test and lint reports
         if: always()
         uses: actions/upload-artifact@v4
