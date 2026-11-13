@@ -1,5 +1,5 @@
 package com.example.bluetoothtimer;
 interface IBluetoothOff {
-    String disable();
+    String disable() = 0;
     void destroy() = 16777114;
 }
