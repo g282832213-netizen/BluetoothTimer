@@ -13,6 +13,7 @@ class TimerService : Service() {
     private var remote: IBluetoothOff? = null
     private var finishing = false
     private var bound = false
+    private var closing = false
     private val args by lazy {
         Shizuku.UserServiceArgs(ComponentName(this, PrivilegedBluetooth::class.java))
             .daemon(false).processNameSuffix("bluetooth_off").version(3)
@@ -53,9 +54,15 @@ class TimerService : Service() {
                 if (seconds !in 1..604800) { complete("倒计时时间无效"); return START_NOT_STICKY }
                 prefs.edit().putLong("end", SystemClock.elapsedRealtime() + seconds * 1000).apply()
                 finishing = false
+                closing = false
+                val alarms = getSystemService(AlarmManager::class.java)
+                if (Build.VERSION.SDK_INT >= 31 && !alarms.canScheduleExactAlarms()) {
+                    complete("请允许闹钟和提醒后重试"); return START_NOT_STICKY
+                }
                 getSystemService(AlarmManager::class.java).setExactAndAllowWhileIdle(
                     AlarmManager.ELAPSED_REALTIME_WAKEUP, prefs.getLong("end", 0), alarmIntent())
                 bindRemote()
+                if (prefs.getLong("end", 0) == 0L) return START_NOT_STICKY
                 handler.removeCallbacks(tick)
                 handler.post(tick)
             }
@@ -93,6 +100,8 @@ class TimerService : Service() {
     }
     private fun executeClose() {
         val service = remote ?: return
+        if (closing) return
+        closing = true
         worker.execute {
             val message = try { service.disable() } catch (_: Exception) { "Shizuku 连接已断开，蓝牙未关闭" }
             handler.post { complete(message) }
