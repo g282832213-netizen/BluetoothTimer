@@ -18,6 +18,10 @@ class LayoutTest {
         listOf(v) + if (v is ViewGroup) (0 until v.childCount).flatMap { views(v.getChildAt(it)) } else emptyList()
     @Test fun threePresetsSurviveRecreationAndButtonsHaveUsableHeight() {
         val ctx = InstrumentationRegistry.getInstrumentation().targetContext
+        InstrumentationRegistry.getInstrumentation().uiAutomation
+            .executeShellCommand("pm grant com.example.bluetoothtimer android.permission.POST_NOTIFICATIONS").use { fd ->
+                android.os.ParcelFileDescriptor.AutoCloseInputStream(fd).use { it.readBytes() }
+            }
         ctx.getSharedPreferences("presets", 0).edit().clear().commit()
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             InstrumentationRegistry.getInstrumentation().waitForIdleSync()
