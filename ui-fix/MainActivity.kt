@@ -82,7 +82,7 @@ class MainActivity : Activity() {
             maxLines = 4
         }, fullWrap(0))
         setContentView(ScrollView(this).apply {
-            fillViewport = true
+            setFillViewport(true)
             addView(layout)
         })
     }
